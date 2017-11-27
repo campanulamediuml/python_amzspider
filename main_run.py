@@ -41,6 +41,7 @@ def main():
     cursor = conn.cursor()
     cursor.execute('TRUNCATE TABLE py_product_comments_tmp')
     print 'wash successfully'
+    cursor.execute('UPDATE py_product_comments SET syn_status = 0')
     print time.localtime()
     conn.commit()
 
