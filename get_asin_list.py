@@ -13,7 +13,7 @@ asid_list = cursor.fetchall()
 
 result = []
 for i in asid_list:
-    asid = i[2]
+    asid = i[3]
     try:
         if str(asid)[0] == 'B':
             result.append(asid)

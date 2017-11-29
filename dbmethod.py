@@ -35,6 +35,9 @@ def combination(keywords):
 def set_color(line):
     result_data = line
     try:  
+        for i in result_data:
+            result_data[result_data.index(i)] = i.replace('"','\\\"')
+            result_data[result_data.index(i)] = i.replace("'","\\\'")
         #print result_data
         tmp = result_data[4]
         #color_json = crm_method.
