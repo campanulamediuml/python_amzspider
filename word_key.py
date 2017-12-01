@@ -14,7 +14,7 @@ cursor = conn.cursor()
 
 print 'connecting successful...'
 
-cursor.execute('SELECT * FROM py_product_comments WHERE good_type = "'+config.good_type+'"')
+cursor.execute('SELECT * FROM py_product_comments')
 results = cursor.fetchall()
 comment_list = []
 for i in results:
@@ -151,7 +151,7 @@ def get_word_count(analys):
 
     result_list = list(set(result_list))
     
-    cursor.execute('SELECT * FROM py_keyword_word_count WHERE good_type = "'+config.good_type+'"')
+    cursor.execute('SELECT * FROM py_keyword_word_count')
     key_words_list = cursor.fetchall()
     key_words_index = []
     for key_word_line in key_words_list:
@@ -181,10 +181,10 @@ def get_main_word():
     # conn = mydatabase.connect(host='117.25.155.149', port=3306, user='gelinroot', passwd='glt#789A', db='db_data2force', charset='utf8')
     # cursor = conn.cursor()
 
-    cursor.execute('SELECT * FROM py_keyword_word_count WHERE good_type = "'+config.good_type+'"')
+    cursor.execute('SELECT * FROM py_keyword_word_count')
     results = cursor.fetchall()
 
-    cursor.execute('SELECT * FROM py_keyword_main_tmp WHERE good_type = "'+config.good_type+'"')
+    cursor.execute('SELECT * FROM py_keyword_main_tmp')
     key_main = cursor.fetchall()
     key_main_index = []
     for i in key_main:

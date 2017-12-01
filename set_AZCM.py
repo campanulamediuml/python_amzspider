@@ -3,6 +3,7 @@ import MySQLdb as mydatabase
 import config
 from multiprocessing import Pool
 import db
+import time
 
 #***********************
 #  ┏┓     ┏┓
@@ -35,66 +36,38 @@ print 'connecting successful...'
 # except:
 #     print 'table exists'
 
-cursor.execute('SELECT * FROM py_product_comments WHERE good_type = "'+config.good_type+'"')#从数据库中提取全部数据
+cursor.execute('SELECT * FROM py_product_comments')#从数据库中提取全部数据
 pro_info = cursor.fetchall()
-print len(pro_info)
 
-cursor.execute('SELECT * FROM py_keyword_main_tmp WHERE good_type = "'+config.good_type+'"')#从数据库中提取全部数据
+cursor.execute('SELECT * FROM py_keyword_main_tmp')#从数据库中提取全部数据
 key_words = cursor.fetchall()
-print len(key_words)
 
+word_dict = {}
+info_dict = {}
 
-key_list = []
+for i in pro_info:
+    info_dict[i[0]] = i[1:-1]
 for i in key_words:
-    tmp = []
-    for j in i:
-        tmp.append(j)
-    key_list.append(tmp[1:])
+    word_dict[i[0]] = i[1:]
 
 result = []
+for line in word_dict:
+    tmp = list(word_dict[line])
+    info_list = [info_dict[tmp[2]][0],info_dict[tmp[2]][5],info_dict[tmp[2]][4]]
+    tmp = tmp+info_list
+    result.append(tmp)
+print result[0]
 
-def func_judge(key):
-    pro_index = key[2]
-    for i in pro_info:
-        if int(i[0]) == int(pro_index):
-            key.append(i[1])
-            key.append(i[6])
-            key.append(i[5])            
-            break
-    return key
-
-
-pool = Pool()
-result = pool.map(func_judge,key_list)
-
-
-print 'writing into database...'
-
-conn = mydatabase.connect(host=db.host, port=db.port, user=db.user, passwd=db.passwd, db=db.db, charset=db.charset)
-cursor = conn.cursor()
-print 'connecting successful...'
-cursor.execute('SELECT * FROM py_keyword_main WHERE good_type = "'+config.good_type+'"')#从数据库中提取全部数据
-key_words = cursor.fetchall()
-key_index = []
-for i in key_words:
-    tmp = []
-    for j in i[1:-1]:
-        tmp.append(j)
-    key_index.append(tmp)
-
-
-
-
-print result[4]
+print 'commiting'
 count = 0
 for line in result:
-    if line not in key_index:
     #print line
-        cursor.execute('INSERT INTO  py_keyword_main(express,score,comment_id,comment,pos_or_neg,good_type,express_id,prod_asin,son_asin,attribute)  values(%s,%s,%s,%s,%s,%s,%s,%s,%s,%s)',line) 
-        count += 1
-        if count % 10000 == 0:
-            conn.commit()
-    else:
-        continue
+    cursor.execute('INSERT INTO  py_keyword_main(express,score,comment_id,comment,pos_or_neg,good_type,express_id,prod_asin,son_asin,attribute)  values(%s,%s,%s,%s,%s,%s,%s,%s,%s,%s)',line) 
+    count += 1
+    if count % 10000 == 0:
+        conn.commit()
+
 
 conn.commit() 
+
+

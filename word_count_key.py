@@ -10,13 +10,13 @@ cursor = conn.cursor()
 
 print 'connecting successful...'
 
-cursor.execute('SELECT * FROM py_keyword_main WHERE good_type = "'+config.good_type+'"')#从数据库中提取全部数据
+cursor.execute('SELECT * FROM py_keyword_main')#从数据库中提取全部数据
 key_words = cursor.fetchall()
 
 # cursor.execute('SELECT * FROM py_shoes_comment_raw_data')
 # raw_data = cursor.fetchall()
 
-cursor.execute('SELECT * FROM py_keyword_word_count WHERE good_type = "'+config.good_type+'"')
+cursor.execute('SELECT * FROM py_keyword_word_count')
 key_count = cursor.fetchall()
 
 def get_pos_count(data_tuple):
@@ -134,7 +134,7 @@ result_list = pool.map(get_result_tuple,key_word_index)
 
 conn = mydatabase.connect(host=db.host, port=db.port, user=db.user, passwd=db.passwd, db=db.db, charset=db.charset)
 cursor = conn.cursor()
-cursor.execute('SELECT * FROM py_keyword_count WHERE good_type = "'+config.good_type+'"')
+cursor.execute('SELECT * FROM py_keyword_count')
 key_count = cursor.fetchall()
 key_index = []
 for i in key_count:
