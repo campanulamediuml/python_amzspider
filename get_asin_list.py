@@ -1,6 +1,4 @@
 #coding=utf-8
-import sys
-sys.path.append("..")
 import MySQLdb as mydatabase
 import db
 
@@ -13,7 +11,7 @@ asid_list = cursor.fetchall()
 
 result = []
 for i in asid_list:
-    asid = i[3]
+    asid = i[2]
     try:
         if str(asid)[0] == 'B':
             result.append(asid)

@@ -4,10 +4,10 @@ import os
 import MySQLdb as mydatabase
 import db
 
-open('result/result_comment.txt','w')
+#open('result/result_comment.txt','w')
 os.system('python autorun.py')
 os.system('python washdb.py')
-os.system('python resetnew.py')
+# os.system('python resetnew.py')
 os.system('python word_key.py')
 os.system('python set_AZCM.py')
 os.system('python word_count_key.py')

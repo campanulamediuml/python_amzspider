@@ -28,12 +28,19 @@ import db
 print open('shenshou.py').read()
 
 def main():
+    time_1 = time.time()
     open('result/result_comment.txt','w')
     os.system('python autorun.py')
     os.system('python washdb.py')
+    time_2 = time.time()
+    print '数据爬取花费',str(time_2-time_1),'秒'
     os.system('python resetnew.py')
+    time_3 = time.time()
+    print '数据去重花费',str(time_3-time_2),'秒'
     os.system('python word_key.py')
     os.system('python set_AZCM.py')
+    time_4 = time.time()
+    print '关键词分析取花费',str(time_4-time_3),'秒'
     os.system('python word_count_key.py')
     print 'analyze finish...'
     print 'washing tmp database...'
@@ -49,8 +56,11 @@ while 1:
     localtime = time.asctime(time.localtime(time.time()))
     #print time.localtime(time.time())
     if localtime.split()[3].split(':')[0] == '20':
+        time_1 = time.time()
         print 'running...'
         main()
+        time_2 = time.time()
+        print time_2-time_1
         print 'other ring begin..waiting...'
         print open('shenshou.py').read()
     time.sleep(60)

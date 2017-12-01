@@ -28,8 +28,6 @@ def combination(keywords):
 
     return result
 
-
-
     #把几个评论列表连接起来，变成一个巨大的列表
 
 def set_color(line):

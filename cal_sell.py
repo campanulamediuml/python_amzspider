@@ -17,4 +17,4 @@ def cal_sell(comment_count):
 
     return result
 
-print cal_sell(0)
+# print cal_sell(0)

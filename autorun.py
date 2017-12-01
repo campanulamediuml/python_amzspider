@@ -3,8 +3,6 @@ import time
 import os
 import time
 import config
-import sys
-sys.path.append("..")
 
 try:
     fh = open('result/result_comment.txt','r')
