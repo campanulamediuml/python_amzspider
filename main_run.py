@@ -38,10 +38,8 @@ def main():
     time_3 = time.time()
     print '数据去重花费',str(time_3-time_2),'秒'
     os.system('python word_key.py')
-    os.system('python set_AZCM.py')
     time_4 = time.time()
     print '关键词分析取花费',str(time_4-time_3),'秒'
-    os.system('python word_count_key.py')
     print 'analyze finish...'
     print 'washing tmp database...'
     conn = mydatabase.connect(host=db.host, port=db.port, user=db.user, passwd=db.passwd, db=db.db, charset=db.charset)

@@ -157,7 +157,6 @@ def get_word_count(analys):
     for key_word_line in key_words_list:
         key_words_index.append(key_word_line[1])
 
-
     print 'writing into database...'
     count = 0
     for line in result_list:
@@ -165,61 +164,90 @@ def get_word_count(analys):
         # if line[0] not in key_words_index:
         cursor.execute('INSERT INTO  py_keyword_word_count (express_without_score,word_type,count_all,count_pos,count_neg,count_mid,good_type)  values(%s,%s,%s,%s,%s,%s,%s)',line) 
         count = count+1
-        
-        # if count%100 == 0:
-            # print count
         if count % 10000 == 0:
-
             conn.commit()#五千条提交一次 
-    
 
     conn.commit()
 
-def get_main_word():
-    get_word_count(analys)
+get_word_count(analys)
+cursor.execute('SELECT * FROM py_keyword_word_count')
+results = cursor.fetchall()
 
-    # conn = mydatabase.connect(host='117.25.155.149', port=3306, user='gelinroot', passwd='glt#789A', db='db_data2force', charset='utf8')
-    # cursor = conn.cursor()
+print 'getting main table...'
 
-    cursor.execute('SELECT * FROM py_keyword_word_count')
-    results = cursor.fetchall()
+index_dict = {}
+for i in results:
+    index_dict[i[1]] = i[0]
+print '1'
 
-    cursor.execute('SELECT * FROM py_keyword_main_tmp')
-    key_main = cursor.fetchall()
-    key_main_index = []
-    for i in key_main:
-        tmp = []
-        for j in i[1:]:
-            tmp.append(j)
-        key_main_index.append(tmp)
-    print 'getting main table...'
-    index_dict = {}
-    for i in results:
-        if i[1] not in index_dict:
-            index_dict[i[1]] = i[0]
+# final_result = []
+# for item in analys:
+#     final_result.append(item+[index_dict[item[0]]])
+# print '2'
+print type(analys)
+print analys[0]
 
-    final_result = []
-    for item in analys:
-        final_result.append(item+[index_dict[item[0]]])
+def get_final_result(item):
+    return item+[index_dict[item[0]]]
 
-    count = 0
-    for line in final_result:
-        #如果这条不存在，则插入，如果存在，则跳过
-        #print len(line)
-        #print line
-        # if line not in key_main_index:
-        cursor.execute('INSERT INTO  py_keyword_main_tmp (express,score,comment_id,comment,pos_or_neg,good_type,express_id)  values(%s,%s,%s,%s,%s,%s,%s)',line) 
-        count = count+1
-        if count % 10000 == 0:
-            conn.commit()
-        # else:
-        #     continue
+pool = Pool()
+final_result = map(get_final_result,analys)
+pool.close()
 
 
-    conn.commit()
+def get_key_words(line): 
+    return tuple([final_result.index(line)+1]+line)
 
+pool = Pool()
+key_words = pool.map(get_key_words,final_result)
+pool.close()
+print key_words[0]
 
-get_main_word()
+print 'get main table successful'
+
+word_dict = {}
+info_dict = {}
+
+cursor.execute('SELECT * FROM py_product_comments')#从数据库中提取全部数据
+pro_info = cursor.fetchall()
+
+for i in pro_info:
+    info_dict[i[0]] = i[1:-1]
+for i in key_words:
+    word_dict[i[0]] = i[1:]
+
+def get_keyword_table(line):
+    tmp = list(word_dict[line])
+    info_list = [info_dict[tmp[2]][0],info_dict[tmp[2]][5],info_dict[tmp[2]][4]]
+    tmp = tmp+info_list
+    return tmp
+
+# result = []
+# for line in word_dict:
+#     tmp = list(word_dict[line])
+#     info_list = [info_dict[tmp[2]][0],info_dict[tmp[2]][5],info_dict[tmp[2]][4]]
+#     tmp = tmp+info_list
+#     result.append(tmp)
+# print result[0]
+
+result = []
+pool=Pool()
+result = pool.map(get_keyword_table,word_dict)
+pool.close()
+print len(result)
+
+print 'commiting'
+count = 0
+
+for line in result:
+    #print line
+    cursor.execute('INSERT INTO  py_keyword_main(express,score,comment_id,comment,pos_or_neg,good_type,express_id,prod_asin,son_asin,attribute)  values(%s,%s,%s,%s,%s,%s,%s,%s,%s,%s)',line) 
+    count += 1
+    if count % 10000 == 0:
+        conn.commit()
+
+conn.commit() 
+
 
 
 
