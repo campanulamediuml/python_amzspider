@@ -159,14 +159,23 @@ def get_word_count(analys):
 
     print 'writing into database...'
     count = 0
+
+    sql = 'INSERT INTO  py_keyword_word_count (express_without_score,word_type,count_all,count_pos,count_neg,count_mid,good_type)  values'
+    inser_list = []
     for line in result_list:
+        sql += '(%s,%s,%s,%s,%s,%s,%s),'
+        inser_list.extend(list(line))
         #print line
         # if line[0] not in key_words_index:
-        cursor.execute('INSERT INTO  py_keyword_word_count (express_without_score,word_type,count_all,count_pos,count_neg,count_mid,good_type)  values(%s,%s,%s,%s,%s,%s,%s)',line) 
+        #cursor.execute('INSERT INTO  py_keyword_word_count (express_without_score,word_type,count_all,count_pos,count_neg,count_mid,good_type)  values(%s,%s,%s,%s,%s,%s,%s)',line) 
         count = count+1
         if count % 10000 == 0:
+            cursor.execute(sql[:-1],inser_list)
+            sql = 'INSERT INTO  py_keyword_word_count (express_without_score,word_type,count_all,count_pos,count_neg,count_mid,good_type)  values'
+            inser_list = []
             conn.commit()#五千条提交一次 
-
+    #print sql[]
+    cursor.execute(sql[:-1],inser_list)
     conn.commit()
 
 get_word_count(analys)
@@ -239,13 +248,21 @@ print len(result)
 print 'commiting'
 count = 0
 
+sql = 'INSERT INTO  py_keyword_main(express,score,comment_id,comment,pos_or_neg,good_type,express_id,prod_asin,son_asin,attribute)  values'
+inser_list = []
+
 for line in result:
-    #print line
-    cursor.execute('INSERT INTO  py_keyword_main(express,score,comment_id,comment,pos_or_neg,good_type,express_id,prod_asin,son_asin,attribute)  values(%s,%s,%s,%s,%s,%s,%s,%s,%s,%s)',line) 
+    sql+='(%s,%s,%s,%s,%s,%s,%s,%s,%s,%s),'
+    inser_list.extend(list(line))
+
     count += 1
     if count % 10000 == 0:
-        conn.commit()
+        cursor.execute(sql[:-1],inser_list) 
+        sql = 'INSERT INTO  py_keyword_main(express,score,comment_id,comment,pos_or_neg,good_type,express_id,prod_asin,son_asin,attribute)  values'
+        inser_list = []
+        conn.commit()#五千条提交一次 
 
+cursor.execute(sql[:-1],inser_list)
 conn.commit() 
 
 

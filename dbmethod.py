@@ -50,21 +50,16 @@ def set_color(line):
 
 def write_into_database(comment_list,cursor,conn):
     count = 0 
+    sql = 'INSERT INTO py_product_comments_tmp(prod_asin,title,content,user_name,attribute,type_call,user_address,prod_star,create_date,prod_website,prod_group_number,vote,good_type)  values'
+    inser_list = []
     for line in comment_list:
-        try:
-            cursor.execute('INSERT INTO py_product_comments_tmp(prod_asin,title,content,user_name,attribute,type_call,user_address,prod_star,create_date,prod_website,prod_group_number,vote,good_type)  values(%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s)',line) 
-        #cursor.execute('INSERT INTO fashion_shoe_comment_tmp (prod_asin,title,content,user_name,color,type_call,user_address,vote,prod_star,create_date)  values(%s,%s,%s,%s,%s,%s,%s,%s,%s,%s)',line)
-        #写入数据库
-            count = count + 1           
-            # except:
-            #     print line
-            #     continue
-            #写入数据库
-            if count%50 == 0:
-                conn.commit()
-        except Exception,e:
-            print e
-            print line
-            continue
-
+        sql+='(%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s),'
+        inser_list.extend(list(line))
+        count += 1
+        if count%10000 == 0:
+            cursor.execute(sql[:-1],inser_list)
+            sql = 'INSERT INTO py_product_comments_tmp(prod_asin,title,content,user_name,attribute,type_call,user_address,prod_star,create_date,prod_website,prod_group_number,vote,good_type)  values'
+            inser_list = [] 
+            conn.commit()
+    cursor.execute(sql[:-1],inser_list)
     conn.commit()

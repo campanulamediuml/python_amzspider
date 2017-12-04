@@ -47,27 +47,43 @@ def commit_into_database(result_list):
     conn.commit()
 
     count = 0
+    sql = 'INSERT INTO py_product_comments_tmp(prod_asin,title,content,user_name,attribute,type_call,user_address,prod_star,create_date,prod_website,prod_group_number,good_type,vote)  values'
+    inser_list = []
     for line in result_list:
         cursor.execute('INSERT INTO py_product_comments_tmp(prod_asin,title,content,user_name,attribute,type_call,user_address,prod_star,create_date,prod_website,prod_group_number,good_type,vote)  values(%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s)',line) 
             #cursor.execute('INSERT INTO fashion_shoe_comment_tmp (prod_asin,title,content,user_name,color,type_call,user_address,vote,prod_star,create_date)  values(%s,%s,%s,%s,%s,%s,%s,%s,%s,%s)',line)
-            #写入数据库
+            #写入数据库\
+        sql += '(%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s),'
+        inser_list.extend(list(line))
         count += 1
         if count % 10000==0:
+            cursor.execute(sql[:-1],inser_list)
+            sql = 'INSERT INTO py_product_comments_tmp(prod_asin,title,content,user_name,attribute,type_call,user_address,prod_star,create_date,prod_website,prod_group_number,good_type,vote)  values'
+            inser_list = []
             conn.commit()
+    cursor.execute(sql[:-1],inser_list)
     conn.commit()
 
     cursor.execute('TRUNCATE TABLE py_product_comments')
     conn.commit()
 
     count = 0
+    sql = 'INSERT INTO py_product_comments(prod_asin,title,content,user_name,attribute,type_call,user_address,prod_star,create_date,prod_website,prod_group_number,good_type,vote)  values'
+    inser_list = []
     for line in result_list:
         cursor.execute('INSERT INTO py_product_comments(prod_asin,title,content,user_name,attribute,type_call,user_address,prod_star,create_date,prod_website,prod_group_number,good_type,vote)  values(%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s)',line) 
             #cursor.execute('INSERT INTO fashion_shoe_comment_tmp (prod_asin,title,content,user_name,color,type_call,user_address,vote,prod_star,create_date)  values(%s,%s,%s,%s,%s,%s,%s,%s,%s,%s)',line)
-            #写入数据库
+            #写入数据库\
+        sql += '(%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s),'
+        inser_list.extend(list(line))
         count += 1
         if count % 10000==0:
+            cursor.execute(sql[:-1],inser_list)
+            sql = 'INSERT INTO py_product_comments_tmp(prod_asin,title,content,user_name,attribute,type_call,user_address,prod_star,create_date,prod_website,prod_group_number,good_type,vote)  values'
+            inser_list = []
             conn.commit()
-    conn.commit()  
+    cursor.execute(sql[:-1],inser_list)
+    conn.commit()
 
 def main():
     long_list = get_data()
