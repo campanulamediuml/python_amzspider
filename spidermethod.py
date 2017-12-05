@@ -162,7 +162,7 @@ def get_vote(html):
         vote = filter(str.isdigit,str(vote))
         #如果是投票
     except:
-        vote = 'N/A' 
+        vote = '0' 
     return vote.encode('utf-8')
 #获取评论票数
 def get_comment_data(html):

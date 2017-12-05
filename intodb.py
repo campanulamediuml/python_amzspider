@@ -18,9 +18,10 @@ def main():
     pool = Pool()
     comment_list = pool.map(dbmethod.set_color,comment_list)
     print comment_list[2]
-    conn = mydatabase.connect(host='117.25.155.149', port=3306, user='gelinroot', passwd='glt#789A', db='db_dolphin', charset='utf8')
+    conn = mydatabase.connect(host=db.host, port=db.port, user=db.user, passwd=db.passwd, db=db.db, charset=db.charset)
     cursor = conn.cursor()
     print len(comment_list)
     dbmethod.write_into_database(comment_list,cursor,conn)
     conn.commit()
+
 

@@ -7,6 +7,7 @@ import word_key
 import washdb
 import resetnew
 import autorun
+import config
 
 #***********************
 #  ┏┓     ┏┓
@@ -34,7 +35,7 @@ print open('shenshou.py').read()
 def main():
     time_1 = time.time()
     open('result/result_comment.txt','w')
-    autorun.main()
+    #autorun.main()
     washdb.main()
     time_2 = time.time()
     print '数据爬取花费',str(time_2-time_1),'秒'
@@ -57,7 +58,7 @@ def main():
 while 1:
     localtime = time.asctime(time.localtime(time.time()))
     #print time.localtime(time.time())
-    if localtime.split()[3].split(':')[0] == '13':
+    if localtime.split()[3].split(':')[0] == str(config.run_time):
         time_1 = time.time()
         print 'running...'
         main()

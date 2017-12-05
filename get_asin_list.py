@@ -4,13 +4,10 @@ import db
 import config
 
 def main():
-    conn = mydatabase.connect(host=db.host, port=db.port, user=db.user, passwd=db.passwd, db=db.db, charset=db.charset)
+    conn = mydatabase.connect(host=db.host, port=db.port, user=db.user, passwd=db.passwd, db='db_dolphin', charset=db.charset)
     cursor = conn.cursor()
-
     cursor.execute('SELECT * FROM user_product WHERE website = "AZCM" AND user_id >'+str(config.user_id)+' ')#从数据库中提取全部数据
     asid_list = cursor.fetchall()
-
-
     result = []
     for i in asid_list:
         asid = i[2]
@@ -22,7 +19,8 @@ def main():
         except:
             continue
 
-    result = list(set(result))[:3]
+    result = list(set(result))
+    print len(result)
 
     fh = open('asid_list.txt','w')
     for i in result:
