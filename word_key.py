@@ -7,20 +7,7 @@ import nltk
 import emotionanalysis
 import config
 import db
-
-conn = mydatabase.connect(host=db.host, port=db.port, user=db.user, passwd=db.passwd, db=db.db, charset=db.charset)
-cursor = conn.cursor()
-
-
-print 'connecting successful...'
-
-cursor.execute('SELECT * FROM py_product_comments')
-results = cursor.fetchall()
-comment_list = []
-for i in results:
-    comment_list.append(i)
-
-print 'analyzing...'
+import time
 
 def get_key_word(comment_line):
     nltk_keyword = emotionanalysis.get_keyword(comment_line[3])#用nltk提取出评论正文中的关键词
@@ -45,20 +32,8 @@ def get_key_word(comment_line):
             #排除掉rake中分数过低的关键词
             rst_tmp.append([j[0],j[1],comment_line[0],comment_line[3],judge,config.good_type])
             #格式化输出结果
-
 #这块代码用来获取关键词       
     return rst_tmp
-
-pool = Pool()
-#抢占资源，运行时电脑有多少个逻辑核心就抢多少个
-result = pool.map(get_key_word,comment_list)
-pool.close()
-#返回一个list列表，列表内容也是一个list
-analys = []
-for i in result:
-    analys.extend(i)
-#扩展成一条单独的list
-#把处理结果储存起来，然后清空列表
 
 def count_all(analys):
     count_dict_all = {}
@@ -122,6 +97,7 @@ def get_word_type(analys):
     #获取词语的类型
 
 def get_word_count(analys):
+
     print 'counting...'
     count_dict_all = count_all(analys)
     count_dict_pos = count_pos(analys)
@@ -165,65 +141,43 @@ def get_word_count(analys):
     for line in result_list:
         sql += '(%s,%s,%s,%s,%s,%s,%s),'
         inser_list.extend(list(line))
-        #print line
-        # if line[0] not in key_words_index:
-        #cursor.execute('INSERT INTO  py_keyword_word_count (express_without_score,word_type,count_all,count_pos,count_neg,count_mid,good_type)  values(%s,%s,%s,%s,%s,%s,%s)',line) 
         count = count+1
         if count % 10000 == 0:
             cursor.execute(sql[:-1],inser_list)
             sql = 'INSERT INTO  py_keyword_word_count (express_without_score,word_type,count_all,count_pos,count_neg,count_mid,good_type)  values'
             inser_list = []
             conn.commit()#五千条提交一次 
-    #print sql[]
-    cursor.execute(sql[:-1],inser_list)
+    try:
+        cursor.execute(sql[:-1],inser_list)
+    except:
+        pass
     conn.commit()
 
-get_word_count(analys)
-cursor.execute('SELECT * FROM py_keyword_word_count')
-results = cursor.fetchall()
 
-print 'getting main table...'
+def get_analysis():
+    print 'connecting successful...'
+    cursor.execute('SELECT * FROM py_product_comments')
+    results = cursor.fetchall()
+    comment_list = []
+    for i in results:
+        comment_list.append(i)
 
-index_dict = {}
-for i in results:
-    index_dict[i[1]] = i[0]
-print '1'
+    print 'analyzing...'
 
-# final_result = []
-# for item in analys:
-#     final_result.append(item+[index_dict[item[0]]])
-# print '2'
-print type(analys)
-print analys[0]
-
-def get_final_result(item):
-    return item+[index_dict[item[0]]]
-
-pool = Pool()
-final_result = map(get_final_result,analys)
-pool.close()
-
+    pool = Pool(4)
+    #抢占资源，运行时电脑有多少个逻辑核心就抢多少个
+    result = pool.map(get_key_word,comment_list)
+    pool.close()
+    #返回一个list列表，列表内容也是一个list
+    analys = []
+    for i in result:
+        analys.extend(i)
+    #扩展成一条单独的list
+    #把处理结果储存起来，然后清空列表
+    return analys
 
 def get_key_words(line): 
     return tuple([final_result.index(line)+1]+line)
-
-pool = Pool()
-key_words = pool.map(get_key_words,final_result)
-pool.close()
-print key_words[0]
-
-print 'get main table successful'
-
-word_dict = {}
-info_dict = {}
-
-cursor.execute('SELECT * FROM py_product_comments')#从数据库中提取全部数据
-pro_info = cursor.fetchall()
-
-for i in pro_info:
-    info_dict[i[0]] = i[1:-1]
-for i in key_words:
-    word_dict[i[0]] = i[1:]
 
 def get_keyword_table(line):
     tmp = list(word_dict[line])
@@ -231,40 +185,88 @@ def get_keyword_table(line):
     tmp = tmp+info_list
     return tmp
 
-# result = []
-# for line in word_dict:
-#     tmp = list(word_dict[line])
-#     info_list = [info_dict[tmp[2]][0],info_dict[tmp[2]][5],info_dict[tmp[2]][4]]
-#     tmp = tmp+info_list
-#     result.append(tmp)
-# print result[0]
+def get_final_result(item):
+    return item+[index_dict[item[0]]]
 
-result = []
-pool=Pool()
-result = pool.map(get_keyword_table,word_dict)
-pool.close()
-print len(result)
+def main():
+    global final_result
+    global index_dict
+    global word_dict
+    global info_dict
+    global conn
+    global cursor
 
-print 'commiting'
-count = 0
+    conn = mydatabase.connect(host=db.host, port=db.port, user=db.user, passwd=db.passwd, db=db.db, charset=db.charset)
+    cursor = conn.cursor()
+    analys = get_analysis()
+    get_word_count(analys)
+    cursor.execute('SELECT * FROM py_keyword_word_count')
+    results = cursor.fetchall()
 
-sql = 'INSERT INTO  py_keyword_main(express,score,comment_id,comment,pos_or_neg,good_type,express_id,prod_asin,son_asin,attribute)  values'
-inser_list = []
+    print 'getting main table...'
 
-for line in result:
-    sql+='(%s,%s,%s,%s,%s,%s,%s,%s,%s,%s),'
-    inser_list.extend(list(line))
+    time_start = time.time()
 
-    count += 1
-    if count % 10000 == 0:
-        cursor.execute(sql[:-1],inser_list) 
-        sql = 'INSERT INTO  py_keyword_main(express,score,comment_id,comment,pos_or_neg,good_type,express_id,prod_asin,son_asin,attribute)  values'
-        inser_list = []
-        conn.commit()#五千条提交一次 
+    index_dict = {}
+    for i in results:
+        index_dict[i[1]] = i[0]
 
-cursor.execute(sql[:-1],inser_list)
-conn.commit() 
+    pool = Pool(4)
+    final_result = map(get_final_result,analys)
+    pool.close()
+    #
 
+    pool = Pool(4)
+    key_words = pool.map(get_key_words,final_result)
+    pool.close()
+
+    print 'get main table successful'
+
+    word_dict = {}
+    info_dict = {}
+    time_end = time.time()
+
+    conn = mydatabase.connect(host=db.host, port=db.port, user=db.user, passwd=db.passwd, db=db.db, charset=db.charset)
+    cursor = conn.cursor()
+
+    cursor.execute('SELECT * FROM py_product_comments')#从数据库中提取全部数据
+    pro_info = cursor.fetchall()
+
+    for i in pro_info:
+        info_dict[i[0]] = i[1:-1]
+    for i in key_words:
+        word_dict[i[0]] = i[1:]
+
+    pool=Pool(4)
+    result = pool.map(get_keyword_table,word_dict)
+    pool.close()
+    # print len(result)
+
+    conn = mydatabase.connect(host=db.host, port=db.port, user=db.user, passwd=db.passwd, db=db.db, charset=db.charset)
+    cursor = conn.cursor()
+
+    print 'commiting'
+    count = 0
+
+    sql = 'INSERT INTO  py_keyword_main(express,score,comment_id,comment,pos_or_neg,good_type,express_id,prod_asin,son_asin,attribute)  values'
+    inser_list = []
+
+    for line in result:
+        sql+='(%s,%s,%s,%s,%s,%s,%s,%s,%s,%s),'
+        inser_list.extend(list(line))
+
+        count += 1
+        if count % 10000 == 0:
+            cursor.execute(sql[:-1],inser_list) 
+            sql = 'INSERT INTO  py_keyword_main(express,score,comment_id,comment,pos_or_neg,good_type,express_id,prod_asin,son_asin,attribute)  values'
+            inser_list = []
+            conn.commit()#五千条提交一次 
+
+    try:
+        cursor.execute(sql[:-1],inser_list)
+    except:
+        pass
+    conn.commit()
 
 
 

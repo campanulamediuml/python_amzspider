@@ -96,15 +96,6 @@ def refresh_real_database():
     all_results = cursor.fetchall()
 
 
-print refresh,id(refresh)
-print stringtojson,id(stringtojson)
-print copy_database,id(copy_database)
-print set_line_attribute,id(set_line_attribute)
-print refresh_database,id(refresh_database)
-print type(refresh_real_database),id(refresh_real_database)
-print type(json)
-print id(mydatabase)
-
 # refresh()
 # refresh_database()
 

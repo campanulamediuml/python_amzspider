@@ -5,31 +5,6 @@ import operator
 import six
 from six.moves import range
 
-#***********************
-#  ┏┓     ┏┓
-# ┏┛┻━━━━━┛┻┓
-# ┃         ┃
-# ┃    ━    ┃
-# ┃ ┳┛   ┗┳ ┃
-# ┃         ┃
-# ┃    ┻    ┃
-# ┃         ┃
-# ┗━┓     ┏━┛
-#   ┃     ┃ 神兽保佑
-#   ┃     ┃ 代码永无BUG！
-#   ┃     ┗━━━┓
-#   ┃         ┣┓
-#   ┃         ┏┛
-#   ┗┓┓┏━━━┳┓┏┛
-#    ┃┫┫   ┃┫┫
-#    ┗┻┛   ┗┻┛
-#*************************
-
-# 这个文件是rake算法，用语快速获取英文句子中的关键词
-# 请配合停止词列表一同食用
-# 需要修改算法可以把debug变量改为True进行测试
-
-
 debug = False
 test = False
 
@@ -39,34 +14,28 @@ def is_number(s):
         return True
     except ValueError:
         return False
-#这个方法用来处理句子中的数字，判断浮点数和整数
+
 
 def load_stop_words(stop_word_file):
     #传入停止词列表，获取没意义的词语
     stop_words = []
     for line in open(stop_word_file):
         if line.strip()[0:1] != "#":
-            for word in line.split():  
-            #对每一行进行拆分
+            for word in line.split():  #对每一行进行拆分
                 stop_words.append(word)
-                #读取停止词，把停止词变成一套列表结构
     return stop_words
+
 
 def separate_words(text, min_word_return_size):
     
     #这个函数返回一个列表，列表内是进行分词以后的内容
     splitter = re.compile('[^a-zA-Z0-9_\\+\\-/]')
-    #用正则去匹配内容
     words = []
     for single_word in splitter.split(text):
         current_word = single_word.strip().lower()
-        #注意，这里要先把内容转化成小写的
-        #转化的目的是大小写什么的嘛……很讨厌……
         if len(current_word) > min_word_return_size and current_word != '' and not is_number(current_word):
-            #空值就不要返回了……
             words.append(current_word)
     return words
-    #这里返回的是一个list结构，每个元素分别对应一个关键词或短语
 
 
 def split_sentences(text):

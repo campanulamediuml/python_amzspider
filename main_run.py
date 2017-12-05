@@ -3,6 +3,10 @@ import time
 import os
 import MySQLdb as mydatabase
 import db
+import word_key
+import washdb
+import resetnew
+import autorun
 
 #***********************
 #  ┏┓     ┏┓
@@ -30,14 +34,14 @@ print open('shenshou.py').read()
 def main():
     time_1 = time.time()
     open('result/result_comment.txt','w')
-    os.system('python autorun.py')
-    os.system('python washdb.py')
+    autorun.main()
+    washdb.main()
     time_2 = time.time()
     print '数据爬取花费',str(time_2-time_1),'秒'
-    os.system('python resetnew.py')
+    resetnew.main()
     time_3 = time.time()
     print '数据去重花费',str(time_3-time_2),'秒'
-    os.system('python word_key.py')
+    word_key.main()
     time_4 = time.time()
     print '关键词分析取花费',str(time_4-time_3),'秒'
     print 'analyze finish...'
@@ -53,7 +57,7 @@ def main():
 while 1:
     localtime = time.asctime(time.localtime(time.time()))
     #print time.localtime(time.time())
-    if localtime.split()[3].split(':')[0] == '20':
+    if localtime.split()[3].split(':')[0] == '13':
         time_1 = time.time()
         print 'running...'
         main()

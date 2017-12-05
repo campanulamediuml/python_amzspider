@@ -4,7 +4,6 @@ import config
 import json
 import exchangetype
 
-
 def combination(keywords):
     headers = ['prod_asin','title','content','user_name','color','type_call','user_address','prod_star','create_date','prod_website','prod_group_number','vote','good_type']
     rst = []
@@ -22,9 +21,6 @@ def combination(keywords):
         for word in headers:
             line.append(line_dict[word])
         result.append(line)
-
-    print result[3]
-    print len(result[3])
 
     return result
 
@@ -61,5 +57,8 @@ def write_into_database(comment_list,cursor,conn):
             sql = 'INSERT INTO py_product_comments_tmp(prod_asin,title,content,user_name,attribute,type_call,user_address,prod_star,create_date,prod_website,prod_group_number,vote,good_type)  values'
             inser_list = [] 
             conn.commit()
-    cursor.execute(sql[:-1],inser_list)
+    try:
+        cursor.execute(sql[:-1],inser_list)
+    except:
+        pass
     conn.commit()
