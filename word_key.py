@@ -176,8 +176,8 @@ def get_analysis():
     #把处理结果储存起来，然后清空列表
     return analys
 
-def get_key_words(line): 
-    return tuple([final_result.index(line)+1]+line)
+# def get_key_words(line): 
+#     return tuple([final_result.index(line)+1]+list(line))
 
 def get_keyword_table(line):
     tmp = list(word_dict[line])
@@ -186,7 +186,7 @@ def get_keyword_table(line):
     return tmp
 
 def get_final_result(item):
-    return item+[index_dict[item[0]]]
+    return tuple(item+[index_dict[item[0]]])
 
 def main():
     global final_result
@@ -200,6 +200,7 @@ def main():
     cursor = conn.cursor()
     analys = get_analysis()
     get_word_count(analys)
+
     cursor.execute('SELECT * FROM py_keyword_word_count')
     results = cursor.fetchall()
 
@@ -214,11 +215,13 @@ def main():
     pool = Pool(4)
     final_result = map(get_final_result,analys)
     pool.close()
-    #
+    time_mid = time.time()
 
-    pool = Pool(4)
-    key_words = pool.map(get_key_words,final_result)
-    pool.close()
+    key_words = []
+    for i in range(1,len(final_result)+1):
+        line = [i]
+        line.extend(list(final_result[i-1]))
+        key_words.append(tuple(line))
 
     print 'get main table successful'
 
@@ -226,7 +229,7 @@ def main():
     info_dict = {}
     time_end = time.time()
 
-    print int(time_end-time_start)
+    print time_end-time_start
 
     conn = mydatabase.connect(host=db.host, port=db.port, user=db.user, passwd=db.passwd, db=db.db, charset=db.charset)
     cursor = conn.cursor()
