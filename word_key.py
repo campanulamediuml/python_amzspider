@@ -226,6 +226,8 @@ def main():
     info_dict = {}
     time_end = time.time()
 
+    print int(time_end-time_start)
+
     conn = mydatabase.connect(host=db.host, port=db.port, user=db.user, passwd=db.passwd, db=db.db, charset=db.charset)
     cursor = conn.cursor()
 

@@ -30,7 +30,7 @@ import config
 #*************************
 #自动运行该脚本即可
 
-print open('shenshou.py').read()
+print open('shenshou.txt').read()
 
 def main():
     time_1 = time.time()
@@ -65,6 +65,6 @@ while 1:
         time_2 = time.time()
         print time_2-time_1
         print 'other ring begin..waiting...'
-        print open('shenshou.py').read()
+        print open('shenshou.txt').read()
     time.sleep(60)
 
