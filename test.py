@@ -1,6 +1,5 @@
 import os
 
-
 def get_pyx():
     file_list = os.listdir('/Users/JingjingHe/Desktop/python_amzspider_private/cython_test')
     for name in file_list:
@@ -12,7 +11,6 @@ def get_pyx():
         os.system('rm main_run.pyx')
     except:
         pass
-
 
 def write_setup():
     file_list = os.listdir('/Users/JingjingHe/Desktop/python_amzspider_private/cython_test')
@@ -31,7 +29,6 @@ def pyx_to_py():
     os.system('rm *.c')
     os.system('rm *.so')
     os.system('rm -rf build')
-    
 
 # get_pyx()
 # write_setup()

@@ -121,36 +121,33 @@ def get_word_count(analys):
             mid = str(count_dict_mid[word])
         except:
             mid = '0'
-
-        result_tuple = (word,((word_type_dict[word])[0])[1],count_dict_all[word],pos,neg,mid,config.good_type)
+    # 统计每个词在好中差三中评论中的出现次数
+        result_tuple = (word,word_type_dict[word][0][1],count_dict_all[word],pos,neg,mid,config.good_type)
+    # 把统计结果做成一个元组保存
         result_list.append(result_tuple)
-
+    # 把所有词的统计元组拼在一起，做成一条列表
     result_list = list(set(result_list))
-    
-    cursor.execute('SELECT * FROM py_keyword_word_count')
-    key_words_list = cursor.fetchall()
-    key_words_index = []
-    for key_word_line in key_words_list:
-        key_words_index.append(key_word_line[1])
+    # 对列表去重处理
 
     print 'writing into database...'
     count = 0
-
     sql = 'INSERT INTO  py_keyword_word_count (express_without_score,word_type,count_all,count_pos,count_neg,count_mid,good_type)  values'
     inser_list = []
     for line in result_list:
         sql += '(%s,%s,%s,%s,%s,%s,%s),'
         inser_list.extend(list(line))
+        # 写入数据库，拼接一整条insert，一次性全部插入
         count = count+1
         if count % 10000 == 0:
             cursor.execute(sql[:-1],inser_list)
             sql = 'INSERT INTO  py_keyword_word_count (express_without_score,word_type,count_all,count_pos,count_neg,count_mid,good_type)  values'
             inser_list = []
-            conn.commit()#五千条提交一次 
+            conn.commit()#一万条提交一次 
     try:
         cursor.execute(sql[:-1],inser_list)
     except:
         pass
+    # 对空余不满一万的部分进行处理，当然如果没有新的数据就直接跳过了
     conn.commit()
 
 
@@ -164,7 +161,7 @@ def get_analysis():
 
     print 'analyzing...'
 
-    pool = Pool(4)
+    pool = Pool()
     #抢占资源，运行时电脑有多少个逻辑核心就抢多少个
     result = pool.map(get_key_word,comment_list)
     pool.close()
@@ -175,9 +172,6 @@ def get_analysis():
     #扩展成一条单独的list
     #把处理结果储存起来，然后清空列表
     return analys
-
-# def get_key_words(line): 
-#     return tuple([final_result.index(line)+1]+list(line))
 
 def get_keyword_table(line):
     tmp = list(word_dict[line])
@@ -200,28 +194,31 @@ def main():
     cursor = conn.cursor()
     analys = get_analysis()
     get_word_count(analys)
+    # 连接数据库，把刚刚的关键词统计表统计出来提交上去
 
     cursor.execute('SELECT * FROM py_keyword_word_count')
     results = cursor.fetchall()
 
     print 'getting main table...'
-
     time_start = time.time()
 
     index_dict = {}
     for i in results:
         index_dict[i[1]] = i[0]
+    # 做一个字典，字典的key是关键词，字典的value是这个关键词对应的id字段
 
-    pool = Pool(4)
+    pool = Pool()
     final_result = map(get_final_result,analys)
     pool.close()
     time_mid = time.time()
+    #把关键词和评论对应起来，开多进程同时开始
 
     key_words = []
     for i in range(1,len(final_result)+1):
         line = [i]
         line.extend(list(final_result[i-1]))
         key_words.append(tuple(line))
+    # 给关键词评论表的每一条加上一个对应的索引
 
     print 'get main table successful'
 
@@ -242,9 +239,10 @@ def main():
     for i in key_words:
         word_dict[i[0]] = i[1:]
 
-    pool=Pool(4)
+    pool=Pool()
     result = pool.map(get_keyword_table,word_dict)
     pool.close()
+    # 给关键词评论表的每一条接上对应的asin和属性
     # print len(result)
 
     conn = mydatabase.connect(host=db.host, port=db.port, user=db.user, passwd=db.passwd, db=db.db, charset=db.charset)
